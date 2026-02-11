@@ -1,0 +1,94 @@
+DEFAULT_DELAY 120
+DELAY 400
+
+REM Terminal must already be focused
+GUI n
+DELAY 2500
+
+REM Start clean and deterministic
+STRING cd ~
+ENTER
+DELAY 900
+
+STRING mkdir -p ~/Dev
+ENTER
+DELAY 900
+
+STRING cd ~/Dev
+ENTER
+DELAY 900
+
+REM Clean reruns (must be -rf for directories)
+STRING rm -rf myapp
+ENTER
+DELAY 900
+
+REM Create root and enter it
+STRING mkdir myapp
+ENTER
+DELAY 700
+STRING cd ~/Dev/myapp
+ENTER
+DELAY 900
+
+REM ---- SERVER ----
+STRING mkdir -p server
+ENTER
+DELAY 700
+STRING cd ~/Dev/myapp/server
+ENTER
+DELAY 900
+
+STRING npm init -y
+ENTER
+DELAY 3500
+
+STRING npm i express
+ENTER
+DELAY 12000
+
+STRING npm i cors
+ENTER
+DELAY 10000
+
+STRING npm i dotenv
+ENTER
+DELAY 10000
+
+STRING npm i -D nodemon
+ENTER
+DELAY 14000
+
+DELAY 1000
+STRING printf "const express = require('express');\nconst cors = require('cors');\nrequire('dotenv').config();\n\nconst app = express();\napp.use(cors());\napp.use(express.json());\n\napp.get('/api/health', (req, res) => {\n  res.json({ ok: true });\n});\n\nconst port = process.env.PORT || 3001;\napp.listen(port, () => console.log('API running on http://localhost:' + port));\n" > index.js
+ENTER
+DELAY 2500
+
+STRING node -e "const fs=require('fs'); const p=require('./package.json'); p.scripts=p.scripts||{}; p.scripts.dev='nodemon index.js'; p.scripts.start='node index.js'; fs.writeFileSync('package.json', JSON.stringify(p,null,2));"
+ENTER
+DELAY 2500
+
+REM ---- CLIENT (non-interactive) ----
+STRING cd ~/Dev/myapp
+ENTER
+DELAY 1200
+
+STRING npx --yes create-vite@5 client --template react --no-install
+ENTER
+DELAY 30000
+
+STRING cd ~/Dev/myapp/client
+ENTER
+DELAY 1500
+
+STRING npm i
+ENTER
+DELAY 32000
+
+REM ---- DONE ----
+STRING echo "DONE ✅"
+ENTER
+STRING echo "Server: cd ~/Dev/myapp/server && npm run dev"
+ENTER
+STRING echo "Client: cd ~/Dev/myapp/client && npm run dev"
+ENTER

@@ -1,0 +1,78 @@
+DEFAULT_DELAY 120
+DELAY 400
+
+REM Terminal must already be focused
+
+REM =========================
+REM Window 1: SERVER
+REM =========================
+GUI n
+DELAY 1800
+STRING clear
+ENTER
+DELAY 400
+STRING echo "=============================="
+ENTER
+STRING echo "   STARTING EXPRESS SERVER"
+ENTER
+STRING echo "=============================="
+ENTER
+DELAY 600
+STRING cd $HOME/Dev/myapp/server
+ENTER
+DELAY 800
+STRING npm run dev
+ENTER
+
+REM Give server time to boot
+DELAY 6000
+
+REM =========================
+REM Window 2: HEALTH CHECK (retry until it responds)
+REM =========================
+GUI n
+DELAY 1800
+STRING clear
+ENTER
+DELAY 400
+STRING echo "=============================="
+ENTER
+STRING echo "   HEALTH CHECK"
+ENTER
+STRING echo "=============================="
+ENTER
+DELAY 700
+
+STRING echo "Waiting for http://localhost:3001/api/health ..."
+ENTER
+DELAY 300
+
+STRING until curl -s http://localhost:3001/api/health | grep -q "ok"; do echo " ...not ready yet"; sleep 1; done
+ENTER
+DELAY 300
+STRING echo -n "GET /api/health -> " && curl -s http://localhost:3001/api/health && echo ""
+ENTER
+
+REM Give it a moment so the output is visible
+DELAY 1500
+
+REM =========================
+REM Window 3: CLIENT
+REM =========================
+GUI n
+DELAY 1800
+STRING clear
+ENTER
+DELAY 400
+STRING echo "=============================="
+ENTER
+STRING echo "   STARTING REACT CLIENT"
+ENTER
+STRING echo "=============================="
+ENTER
+DELAY 600
+STRING cd $HOME/Dev/myapp/client
+ENTER
+DELAY 900
+STRING npm run dev
+ENTER

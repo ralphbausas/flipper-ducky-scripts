@@ -1,0 +1,62 @@
+DEFAULT_DELAY 120
+DELAY 300
+GUI n
+DELAY 1500
+
+STRING cd ~/Dev/myapp
+ENTER
+DELAY 600
+
+STRING echo "=== STRUCTURE ==="
+ENTER
+DELAY 200
+STRING ls -la
+ENTER
+DELAY 900
+STRING ls -la server client
+ENTER
+DELAY 900
+
+STRING echo "=== SERVER ==="
+ENTER
+DELAY 200
+STRING cd ~/Dev/myapp/server
+ENTER
+DELAY 600
+STRING test -f index.js && echo "OK: server/index.js" || echo "FAIL: missing server/index.js"
+ENTER
+DELAY 400
+STRING node -c index.js && echo "OK: server syntax" || echo "FAIL: server syntax"
+ENTER
+DELAY 800
+STRING node -p "require('./package.json').scripts.dev"
+ENTER
+DELAY 800
+STRING node -p "require('./package.json').scripts.start"
+ENTER
+DELAY 800
+
+STRING echo "=== CLIENT ==="
+ENTER
+DELAY 200
+STRING cd ~/Dev/myapp/client
+ENTER
+DELAY 600
+STRING test -f vite.config.js && echo "OK: vite.config.js" || echo "FAIL: missing vite.config.js"
+ENTER
+DELAY 400
+STRING node -p "require('./package.json').scripts.dev"
+ENTER
+DELAY 800
+
+STRING echo "=== RUN IT ==="
+ENTER
+DELAY 200
+STRING echo "Server: cd ~/Dev/myapp/server && npm run dev"
+ENTER
+DELAY 200
+STRING echo "Health: curl -s http://localhost:3001/api/health"
+ENTER
+DELAY 200
+STRING echo "Client: cd ~/Dev/myapp/client && npm run dev"
+ENTER
