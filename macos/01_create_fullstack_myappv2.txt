@@ -1,4 +1,4 @@
-DEFAULT_DELAY 180
+DEFAULT_DELAY 250
 DELAY 400
 
 REM Terminal must already be focused
