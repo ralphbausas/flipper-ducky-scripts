@@ -1,46 +1,60 @@
-DEFAULT_DELAY 250
+DEFAULT_DELAY 180
 DELAY 400
 
 REM Terminal must already be focused
-GUI n
-DELAY 2500
 
-REM ---- workspace ----
-STRING cd $HOME
+REM ===== Go HOME (portable) =====
+STRING cd ~
 ENTER
-DELAY 900
+DELAY 600
 
-STRING mkdir -p $HOME/Dev
+REM ===== Ensure Dev exists =====
+STRING mkdir -p ~/Dev
 ENTER
-DELAY 900
+DELAY 600
 
-STRING cd $HOME/Dev
+STRING cd ~/Dev
 ENTER
-DELAY 900
+DELAY 600
 
-REM Clean reruns
+REM Guard: must be in ~/Dev
+STRING test "$PWD" = "$HOME/Dev" || exit 1
+ENTER
+DELAY 600
+
+REM ===== Reset project =====
 STRING rm -rf myapp
 ENTER
-DELAY 900
+DELAY 800
 
 STRING mkdir myapp
 ENTER
-DELAY 700
+DELAY 600
 
-STRING cd $HOME/Dev/myapp
+STRING cd ~/Dev/myapp
 ENTER
-DELAY 900
+DELAY 600
+
+REM Guard: must be in ~/Dev/myapp
+STRING test "$PWD" = "$HOME/Dev/myapp" || exit 1
+ENTER
+DELAY 600
 
 REM =========================
 REM SERVER (Express API :3001)
 REM =========================
 STRING mkdir -p server
 ENTER
-DELAY 700
+DELAY 500
 
-STRING cd $HOME/Dev/myapp/server
+STRING cd ~/Dev/myapp/server
 ENTER
-DELAY 900
+DELAY 600
+
+REM Guard: must be in server
+STRING test "$PWD" = "$HOME/Dev/myapp/server" || exit 1
+ENTER
+DELAY 600
 
 STRING npm init -y
 ENTER
@@ -54,56 +68,65 @@ STRING npm i -D nodemon
 ENTER
 DELAY 14000
 
-REM .env (explicit port)
 STRING printf "PORT=3001\n" > .env
 ENTER
-DELAY 900
+DELAY 500
 
-REM index.js (CJS, no backticks)
+REM index.js
 STRING printf "const express = require('express');\nconst cors = require('cors');\nrequire('dotenv').config();\n\nconst app = express();\napp.use(cors());\napp.use(express.json());\n\napp.get('/api/health', (req, res) => {\n  res.json({ ok: true, time: new Date().toISOString() });\n});\n\nconst port = process.env.PORT || 3001;\napp.listen(port, () => console.log('API running on http://localhost:' + port));\n" > index.js
 ENTER
-DELAY 2500
+DELAY 1500
 
 REM package.json scripts
 STRING node -e "const fs=require('fs'); const p=require('./package.json'); p.scripts=p.scripts||{}; p.scripts.dev='nodemon index.js'; p.scripts.start='node index.js'; fs.writeFileSync('package.json', JSON.stringify(p,null,2));"
 ENTER
-DELAY 2500
+DELAY 1500
 
 REM =========================
 REM CLIENT (Vite React :5173)
 REM =========================
-STRING cd $HOME/Dev/myapp
+STRING cd ~/Dev/myapp
 ENTER
-DELAY 1200
+DELAY 800
+
+REM Guard: must be in myapp
+STRING test "$PWD" = "$HOME/Dev/myapp" || exit 1
+ENTER
+DELAY 600
 
 STRING npx --yes create-vite@5 client --template react --no-install
 ENTER
 DELAY 32000
 
-STRING cd $HOME/Dev/myapp/client
+STRING cd ~/Dev/myapp/client
 ENTER
-DELAY 1500
+DELAY 800
+
+REM Guard: must be in client
+STRING test "$PWD" = "$HOME/Dev/myapp/client" || exit 1
+ENTER
+DELAY 600
 
 STRING npm i
 ENTER
 DELAY 32000
 
-REM vite.config.js proxy (/api -> :3001)
+REM Vite proxy
 STRING printf "import { defineConfig } from 'vite'\nimport react from '@vitejs/plugin-react'\n\nexport default defineConfig({\n  plugins: [react()],\n  server: {\n    proxy: {\n      '/api': 'http://localhost:3001'\n    }\n  }\n})\n" > vite.config.js
 ENTER
-DELAY 2500
+DELAY 1200
 
-REM App.jsx that fetches /api/health via proxy
-STRING printf "import { useEffect, useState } from 'react'\nimport './App.css'\n\nexport default function App() {\n  const [data, setData] = useState(null)\n  const [err, setErr] = useState('')\n  const [loading, setLoading] = useState(true)\n\n  useEffect(() => {\n    let ignore = false\n    async function run() {\n      try {\n        const res = await fetch('/api/health')\n        if (!res.ok) throw new Error('HTTP ' + res.status)\n        const json = await res.json()\n        if (!ignore) setData(json)\n      } catch (e) {\n        if (!ignore) setErr(String(e))\n      } finally {\n        if (!ignore) setLoading(false)\n      }\n    }\n    run()\n    return () => { ignore = true }\n  }, [])\n\n  return (\n    <div style={{ fontFamily: 'system-ui', padding: 24 }}>\n      <h1>Vite + React + Express</h1>\n      <p>Frontend: Vite dev server (5173) • Backend: Express (3001)</p>\n      <h2>/api/health</h2>\n      {loading && <p>Loading...</p>}\n      {err && <p style={{ color: 'crimson' }}>Error: {err}</p>}\n      {data && (\n        <pre style={{ background: '#111', color: '#0f0', padding: 16, borderRadius: 8, overflowX: 'auto' }}>\n{JSON.stringify(data, null, 2)}\n        </pre>\n      )}\n      <p style={{ marginTop: 16, opacity: 0.7 }}>\n        Tip: Start the server first, then the client.\n      </p>\n    </div>\n  )\n}\n" > src/App.jsx
+REM App.jsx
+STRING printf "import { useEffect, useState } from 'react'\nimport './App.css'\n\nexport default function App() {\n  const [data, setData] = useState(null)\n  const [err, setErr] = useState('')\n  const [loading, setLoading] = useState(true)\n\n  useEffect(() => {\n    let ignore = false\n    async function run() {\n      try {\n        const res = await fetch('/api/health')\n        if (!res.ok) throw new Error('HTTP ' + res.status)\n        const json = await res.json()\n        if (!ignore) setData(json)\n      } catch (e) {\n        if (!ignore) setErr(String(e))\n      } finally {\n        if (!ignore) setLoading(false)\n      }\n    }\n    run()\n    return () => { ignore = true }\n  }, [])\n\n  return (\n    <div style={{ fontFamily: 'system-ui', padding: 24 }}>\n      <h1>Vite + React + Express</h1>\n      <p>Frontend: 5173 • Backend: 3001 (proxied)</p>\n      <h2>/api/health</h2>\n      {loading && <p>Loading...</p>}\n      {err && <p style={{ color: 'crimson' }}>Error: {err}</p>}\n      {data && (\n        <pre style={{ background: '#111', color: '#0f0', padding: 16, borderRadius: 8, overflowX: 'auto' }}>\n{JSON.stringify(data, null, 2)}\n        </pre>\n      )}\n      <p style={{ marginTop: 16, opacity: 0.7 }}>\n        Start the server first, then the client.\n      </p>\n    </div>\n  )\n}\n" > src/App.jsx
 ENTER
-DELAY 2500
+DELAY 1500
 
-REM DONE
-STRING echo "DONE ✅ v2 fullstack connected"
+REM ===== Done =====
+STRING echo "DONE ✅ v2.1 connected fullstack"
 ENTER
-STRING echo "Server: cd $HOME/Dev/myapp/server && npm run dev"
-ENTER
-STRING echo "Client: cd $HOME/Dev/myapp/client && npm run dev"
+STRING echo "Server: cd ~/Dev/myapp/server && npm run dev"
 ENTER
 STRING echo "Health: curl -s http://localhost:3001/api/health"
+ENTER
+STRING echo "Client: cd ~/Dev/myapp/client && npm run dev"
 ENTER
